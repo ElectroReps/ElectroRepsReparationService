@@ -63,7 +63,7 @@ public class ReparationService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No client found with id " + reparation.getClientId());
         }
 
-        EmployeeDTO employee = employeeFeignClient.getEmployeeById(reparation.getClientId());
+        EmployeeDTO employee = employeeFeignClient.getEmployeeById(reparation.getEmployeeId());
         if (employee.getName() == null ) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No employee found with id " + reparation.getClientId());
         }
@@ -78,6 +78,17 @@ public class ReparationService {
         if (existingReparation.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No reparation found with id " + id);
         }
+
+        ClientDTO client = clientFeignClient.getClientById(reparation.getClientId());
+        if (client.getName() == null || client.getEmail() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No client found with id " + reparation.getClientId());
+        }
+
+        EmployeeDTO employee = employeeFeignClient.getEmployeeById(reparation.getEmployeeId());
+        if (employee.getName() == null ) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No employee found with id " + reparation.getClientId());
+        }
+
         reparation.setId(existingReparation.get().getId());
         Reparation savedReparation = reparationRepository.save(reparation);
         return ResponseEntity.ok(reparation);
@@ -91,14 +102,17 @@ public class ReparationService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No reparation found with id " + id);
         }
 
-        ClientDTO client = clientFeignClient.getClientById(existingReparation.get().getClientId());
+        EmployeeDTO employee = employeeFeignClient.getEmployeeById(reparationData.getEmployeeId());
+        if (employee.getName() == null ) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No employee found with id " + reparationData.getEmployeeId());
+        }
 
         Reparation reparation = existingReparation.get();
         if (reparationData.getIssueDescription() != null && !reparationData.getIssueDescription().isEmpty()) {
             reparation.setIssueDescription(reparationData.getIssueDescription());
         }
         reparation.setFinished(reparationData.isFinished());
-        reparation.setClientId(reparationData.getEmployeeId());
+        reparation.setEmployeeId(reparationData.getEmployeeId());
 
         Reparation savedReparation = reparationRepository.save(reparation);
         return ResponseEntity.ok(savedReparation);
