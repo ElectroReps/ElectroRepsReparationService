@@ -1,6 +1,5 @@
 package com.electroreps.ElectroRepsReparationService.dtos;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientDTO {
-    String name;
-    String email;
+public class ReparationDataDTO {
+    private Long employeeId;
+    private String issueDescription;
+    private boolean finished;
 }
