@@ -1,5 +1,9 @@
 package com.electroreps.ElectroRepsReparationService.services;
 
+import com.electroreps.ElectroRepsReparationService.clients.ClientFeignClient;
+import com.electroreps.ElectroRepsReparationService.clients.EmployeeFeignClient;
+import com.electroreps.ElectroRepsReparationService.dtos.ClientDTO;
+import com.electroreps.ElectroRepsReparationService.dtos.EmployeeDTO;
 import com.electroreps.ElectroRepsReparationService.dtos.ReparationDataDTO;
 import com.electroreps.ElectroRepsReparationService.models.Reparation;
 import com.electroreps.ElectroRepsReparationService.repositories.ReparationRepository;
@@ -15,6 +19,12 @@ public class ReparationService {
 
     @Autowired
     private ReparationRepository reparationRepository;
+
+    @Autowired
+    ClientFeignClient clientFeignClient;
+
+    @Autowired
+    EmployeeFeignClient employeeFeignClient;
 
     public ResponseEntity<?> getReparationById(Long id) {
 
@@ -48,6 +58,16 @@ public class ReparationService {
 
     public ResponseEntity<?> postReparation(Reparation reparation) {
 
+        ClientDTO client = clientFeignClient.getClientById(reparation.getClientId());
+        if (client.getName() == null || client.getEmail() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No client found with id " + reparation.getClientId());
+        }
+
+        EmployeeDTO employee = employeeFeignClient.getEmployeeById(reparation.getClientId());
+        if (employee.getName() == null ) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No employee found with id " + reparation.getClientId());
+        }
+
         Reparation savedReparation = reparationRepository.save(reparation);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(savedReparation);
     }
@@ -64,17 +84,21 @@ public class ReparationService {
     }
 
     public ResponseEntity<?> updateReparationData(Long id, ReparationDataDTO reparationData) {
+
+
         Optional<Reparation> existingReparation = reparationRepository.findById(id);
         if (existingReparation.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No reparation found with id " + id);
         }
+
+        ClientDTO client = clientFeignClient.getClientById(existingReparation.get().getClientId());
 
         Reparation reparation = existingReparation.get();
         if (reparationData.getIssueDescription() != null && !reparationData.getIssueDescription().isEmpty()) {
             reparation.setIssueDescription(reparationData.getIssueDescription());
         }
         reparation.setFinished(reparationData.isFinished());
-        re
+        reparation.setClientId(reparationData.getEmployeeId());
 
         Reparation savedReparation = reparationRepository.save(reparation);
         return ResponseEntity.ok(savedReparation);
