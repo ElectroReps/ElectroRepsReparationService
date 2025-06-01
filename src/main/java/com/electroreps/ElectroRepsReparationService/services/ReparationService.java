@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 @Service
@@ -29,8 +30,27 @@ public class ReparationService {
     public ResponseEntity<?> getReparationById(Long id) {
 
         Optional<Reparation> reparation = reparationRepository.findById(id);
+
+
         if (reparation.isPresent()) {
-            return ResponseEntity.ok(reparation.get());
+
+            ClientDTO client = clientFeignClient.getClientById(reparation.get().getClientId());
+            if (client.getName() == null || client.getEmail() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No client found with id " + reparation.get().getClientId());
+            }
+
+            EmployeeDTO employee = employeeFeignClient.getEmployeeById(reparation.get().getEmployeeId());
+            if (employee.getName() == null ) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No employee found with id " + reparation.get().getClientId());
+            }
+
+            return ResponseEntity.ok(new HashMap<>() {{
+                put("reparation", reparation.get());
+                put("client", client);
+                put("employee", employee);
+            }});
+
+
         } else {
             return ResponseEntity.status(404).body("No reparation found with id " + id);
         }
@@ -49,7 +69,7 @@ public class ReparationService {
         } else if (clientId != null && employeeId == null && finished != null) {
             return ResponseEntity.ok(reparationRepository.findByClientIdAndFinished(clientId, finished));
         } else if (clientId == null && employeeId != null && finished != null) {
-            return ResponseEntity.ok(reparationRepository.findByEmployeeAndFinished(employeeId, finished));
+            return ResponseEntity.ok(reparationRepository.findByEmployeeIdAndFinished(employeeId, finished));
         }else{
             return ResponseEntity.ok(reparationRepository.findByClientIdAndEmployeeIdAndFinished(clientId, employeeId, finished));
         }
@@ -69,7 +89,11 @@ public class ReparationService {
         }
 
         Reparation savedReparation = reparationRepository.save(reparation);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(savedReparation);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new HashMap<>() {{
+            put("reparation", savedReparation);
+            put("client", client);
+            put("employee", employee);
+        }});
     }
 
     public ResponseEntity<?> updateReparation(Long id, Reparation reparation) {
@@ -91,7 +115,11 @@ public class ReparationService {
 
         reparation.setId(existingReparation.get().getId());
         Reparation savedReparation = reparationRepository.save(reparation);
-        return ResponseEntity.ok(reparation);
+        return ResponseEntity.ok(new HashMap<>() {{
+            put("reparation", reparation);
+            put("client", client);
+            put("employee", employee);
+        }});
     }
 
     public ResponseEntity<?> updateReparationData(Long id, ReparationDataDTO reparationData) {
@@ -107,6 +135,11 @@ public class ReparationService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No employee found with id " + reparationData.getEmployeeId());
         }
 
+        ClientDTO client = clientFeignClient.getClientById(existingReparation.get().getClientId());
+        if (client.getName() == null || client.getEmail() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No client found with id " + existingReparation.get().getClientId());
+        }
+
         Reparation reparation = existingReparation.get();
         if (reparationData.getIssueDescription() != null && !reparationData.getIssueDescription().isEmpty()) {
             reparation.setIssueDescription(reparationData.getIssueDescription());
@@ -115,7 +148,11 @@ public class ReparationService {
         reparation.setEmployeeId(reparationData.getEmployeeId());
 
         Reparation savedReparation = reparationRepository.save(reparation);
-        return ResponseEntity.ok(savedReparation);
+        return ResponseEntity.ok(new HashMap<>() {{
+            put("reparation", savedReparation);
+            put("client", client);
+            put("employee", employee);
+        }});
 
 
     }

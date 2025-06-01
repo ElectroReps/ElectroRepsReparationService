@@ -12,6 +12,6 @@ public interface ReparationRepository extends JpaRepository<Reparation, Long> {
     List<Reparation> findByFinished(boolean finished);
     List<Reparation> findByClientIdAndEmployeeId(Long clientId, Long employeeId);
     List<Reparation> findByClientIdAndFinished(Long clientId, boolean finished);
-    List<Reparation> findByEmployeeAndFinished(Long employeeId, boolean finished);
+    List<Reparation> findByEmployeeIdAndFinished(Long employeeId, boolean finished);
     List<Reparation> findByClientIdAndEmployeeIdAndFinished(Long clientId, Long employeeId, boolean finished);
 }
