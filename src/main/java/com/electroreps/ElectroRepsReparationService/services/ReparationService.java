@@ -69,7 +69,7 @@ public class ReparationService {
         } else if (clientId != null && employeeId == null && finished != null) {
             return ResponseEntity.ok(reparationRepository.findByClientIdAndFinished(clientId, finished));
         } else if (clientId == null && employeeId != null && finished != null) {
-            return ResponseEntity.ok(reparationRepository.findByEmployeeAndFinished(employeeId, finished));
+            return ResponseEntity.ok(reparationRepository.findByEmployeeIdAndFinished(employeeId, finished));
         }else{
             return ResponseEntity.ok(reparationRepository.findByClientIdAndEmployeeIdAndFinished(clientId, employeeId, finished));
         }
