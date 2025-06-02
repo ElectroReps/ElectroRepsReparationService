@@ -89,7 +89,7 @@ public class ReparationService {
         }
 
         Reparation savedReparation = reparationRepository.save(reparation);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new HashMap<>() {{
+        return ResponseEntity.status(HttpStatus.OK).body(new HashMap<>() {{
             put("reparation", savedReparation);
             put("client", client);
             put("employee", employee);
